@@ -3,9 +3,9 @@ import sys
 
 # Função para reproduzir a música de fundo
 def play_music():
-    pygame.mixer.music.load("musica.mpeg")  # Coloque o arquivo de áudio na mesma pasta do script
-    pygame.mixer.music.set_volume(0.5)  # Define o volume (de 0.0 a 1.0)
-    pygame.mixer.music.play(-1, 0.0)  # Reproduz o áudio em loop
+    pygame.mixer.music.load("musica.mpeg")  # Certifique-se de que este arquivo está na pasta correta
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1, 0.0)
 
 # Função para parar a música
 def stop_music():
@@ -13,9 +13,6 @@ def stop_music():
 
 # Inicialização do Pygame
 pygame.init()
-
-# Carregar o áudio de fundo
-play_music()
 
 # Configurações da tela
 WIDTH, HEIGHT = 1366, 768
@@ -28,6 +25,7 @@ BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 
 # Fonte
+pygame.font.init()  # Inicializa fontes (não era necessário, mas reforça)
 font = pygame.font.Font(None, 72)
 button_font = pygame.font.Font(None, 48)
 
@@ -50,10 +48,11 @@ def draw_start_screen():
 
     pygame.display.flip()
 
-# Função para executar o código do jogo (Trabalho.py)
-def start_game():
-    stop_music()  # Para a música ao executar o jogo
-    import Trabalho  # Aqui, você importa o código do jogo (Trabalho.py)
+# Função para ir para a tela de dificuldade
+def go_to_difficulty():
+    stop_music()  # Para a música ao iniciar o jogo
+    import dificuldade  # IMPORTAÇÃO ACONTECE AQUI, DEPOIS DO PYGAME.INIT()
+    dificuldade.start_difficulty()  # Chama a função para iniciar a tela de dificuldade diretamente
 
 # Loop principal do menu inicial
 def start():
@@ -65,7 +64,7 @@ def start():
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if button_rect.collidepoint(event.pos):
-                    start_game()  # Chama a função para iniciar o jogo
+                    go_to_difficulty()  # Chama a função para ir para a tela de dificuldade
 
         draw_start_screen()
 

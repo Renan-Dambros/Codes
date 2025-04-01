@@ -1,6 +1,10 @@
 import pygame
 import random
-import pause  # Importa o código da tela de pausa
+
+def start_game(dificuldade):
+    print(f"Jogo iniciado no modo: {dificuldade}")
+    # Aqui você pode adicionar configurações específicas para cada dificuldade
+    game_loop()
 
 # Inicialização do Pygame
 pygame.init()
@@ -71,18 +75,16 @@ class NPC(pygame.sprite.Sprite):
     def get_invisible_area(self):
         return self.invisible_area
 
-# Função principal do jogo (código principal do jogo de Trabalho.py)
+# Função principal do jogo
 def game_loop():
-    # Criar instâncias do jogador e NPC
     player = Player()
     npc = NPC(300, 300, "Qual é o resultado de 2 + 2?", "4")
-
-    # Grupo de sprites
+    
     all_sprites = pygame.sprite.Group()
     npcs = pygame.sprite.Group()
     all_sprites.add(player, npc)
     npcs.add(npc)
-
+    
     running = True
     question_active = False
     user_answer = ""
@@ -94,8 +96,6 @@ def game_loop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                pause.pause(screen, font)  # Pausar o jogo
             elif event.type == pygame.KEYDOWN and question_active:
                 if event.key == pygame.K_RETURN:
                     if user_answer == npc.answer:
@@ -135,6 +135,6 @@ def game_loop():
 
     pygame.quit()
 
-# Inicializa o Pygame e executa o jogo
-pygame.init()
-game_loop()
+# Permite executar diretamente para testes
+if __name__ == "__main__":
+    start_game("medio")
