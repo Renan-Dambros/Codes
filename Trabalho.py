@@ -1,10 +1,6 @@
 import pygame
 import random
-
-def start_game(dificuldade):
-    print(f"Jogo iniciado no modo: {dificuldade}")
-    # Aqui você pode adicionar configurações específicas para cada dificuldade
-    game_loop()
+import pause
 
 # Inicialização do Pygame
 pygame.init()
@@ -76,7 +72,10 @@ class NPC(pygame.sprite.Sprite):
         return self.invisible_area
 
 # Função principal do jogo
-def game_loop():
+def game_loop(dificuldade):
+    print(f"Jogo iniciado no modo: {dificuldade}")
+
+    # Criar a lógica para o jogo
     player = Player()
     npc = NPC(300, 300, "Qual é o resultado de 2 + 2?", "4")
     
@@ -96,18 +95,22 @@ def game_loop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN and question_active:
-                if event.key == pygame.K_RETURN:
-                    if user_answer == npc.answer:
-                        print("Resposta correta! Você pode avançar.")
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    pause.start_pause(screen, WIDTH, HEIGHT)  # Passando a tela, largura e altura para a função de pausa
+
+                if question_active:
+                    if event.key == pygame.K_RETURN:
+                        if user_answer == npc.answer:
+                            print("Resposta correta! Você pode avançar.")
+                        else:
+                            print("Resposta errada. Tente novamente!")
+                        user_answer = ""
+                        question_active = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        user_answer = user_answer[:-1]
                     else:
-                        print("Resposta errada. Tente novamente!")
-                    user_answer = ""
-                    question_active = False
-                elif event.key == pygame.K_BACKSPACE:
-                    user_answer = user_answer[:-1]
-                else:
-                    user_answer += event.unicode
+                        user_answer += event.unicode
         
         # Movimento do jogador
         player.update(keys, npcs)
@@ -131,10 +134,15 @@ def game_loop():
             screen.blit(answer_surface, (WIDTH // 2 - answer_surface.get_width() // 2, 100))
         
         pygame.display.flip()
-        pygame.time.delay(30)
+        pygame.time.Clock().tick(30)
 
     pygame.quit()
 
-# Permite executar diretamente para testes
+# Função para iniciar o jogo
+def start_game(dificuldade):
+    print(f"Jogo iniciado no modo: {dificuldade}")
+    game_loop(dificuldade)
+
+# Inicializa o Pygame e executa o jogo
 if __name__ == "__main__":
     start_game("medio")
