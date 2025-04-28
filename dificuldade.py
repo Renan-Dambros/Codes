@@ -56,16 +56,14 @@ def start_difficulty():
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if easy_button.collidepoint(event.pos):
-                    print("Modo Fácil selecionado")
+                    print("Easy mode selected")
                     running = False
-                    Trabalho.start_game("facil")  # Inicia o jogo no modo fácil
+                    Trabalho.start_game("easy")  # Alterado para "easy"
                 elif medium_button.collidepoint(event.pos):
-                    print("Modo Médio selecionado")
+                    print("Medium mode selected")
                     running = False
-                    Trabalho.start_game("medio")  # Inicia o jogo no modo médio
+                    Trabalho.start_game("medium")  # Alterado para "medium"
                 elif hard_button.collidepoint(event.pos):
-                    print("Modo Difícil selecionado")
+                    print("Hard mode selected")
                     running = False
-                    Trabalho.start_game("dificil")  # Inicia o jogo no modo difícil
-
-        draw_difficulty_screen()
+                    Trabalho.start_game("hard")  # Alterado para "hard"

@@ -1,0 +1,105 @@
+{
+    "questions": [
+      {
+        "question": "Em Python, o que é um decorator?",
+        "options": {
+          "A": "Função que altera outra função",
+          "B": "Função que gera exceções",
+          "C": "Um tipo de laço",
+          "D": "Um operador lógico"
+        },
+        "correct_answer": "A"
+      },
+      {
+        "question": "Qual comando C libera memória alocada dinamicamente?",
+        "options": {
+          "A": "delete",
+          "B": "free",
+          "C": "remove",
+          "D": "clear"
+        },
+        "correct_answer": "B"
+      },
+      {
+        "question": "O que significa API?",
+        "options": {
+          "A": "Advanced Programming Interface",
+          "B": "Application Programming Interface",
+          "C": "Applied Programming Interface",
+          "D": "Application Protocol Integration"
+        },
+        "correct_answer": "B"
+      },
+      {
+        "question": "Em bancos de dados, o que é uma chave primária?",
+        "options": {
+          "A": "Um índice qualquer",
+          "B": "Um campo que pode repetir valores",
+          "C": "Um campo único para identificar registros",
+          "D": "Um tipo de tabela especial"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Em Java, qual palavra-chave é usada para criar uma interface?",
+        "options": {
+          "A": "class",
+          "B": "struct",
+          "C": "interface",
+          "D": "implements"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Em programação orientada a objetos, o que é herança?",
+        "options": {
+          "A": "Um método que altera classes",
+          "B": "Um objeto chamando outro",
+          "C": "Uma classe que herda atributos de outra",
+          "D": "Uma repetição de métodos"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Em Python, qual função transforma uma string em inteiro?",
+        "options": {
+          "A": "parseInt()",
+          "B": "int()",
+          "C": "str()",
+          "D": "float()"
+        },
+        "correct_answer": "B"
+      },
+      {
+        "question": "Qual linguagem é considerada a mãe das linguagens modernas?",
+        "options": {
+          "A": "Python",
+          "B": "Fortran",
+          "C": "C",
+          "D": "Java"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Qual estrutura de dados funciona no estilo FIFO (First In, First Out)?",
+        "options": {
+          "A": "Pilha",
+          "B": "Lista",
+          "C": "Fila",
+          "D": "Árvore"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Em C++, qual operador é usado para acessar um membro de um objeto usando ponteiro?",
+        "options": {
+          "A": ".",
+          "B": "->",
+          "C": "*",
+          "D": "&"
+        },
+        "correct_answer": "B"
+      }
+    ]
+  }
+  

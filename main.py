@@ -4,6 +4,8 @@ import inicio
 import dificuldade
 import Trabalho
 
+inicio.start()
+
 # Inicialização do Pygame
 pygame.init()
 

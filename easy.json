@@ -1,0 +1,105 @@
+{
+    "questions": [
+      {
+        "question": "Qual comando imprime algo na tela em Python?",
+        "options": {
+          "A": "echo",
+          "B": "print",
+          "C": "printf",
+          "D": "show"
+        },
+        "correct_answer": "B"
+      },
+      {
+        "question": "Em qual linguagem usamos console.log()?",
+        "options": {
+          "A": "Python",
+          "B": "JavaScript",
+          "C": "C++",
+          "D": "Ruby"
+        },
+        "correct_answer": "B"
+      },
+      {
+        "question": "Como declaramos uma variável inteira em C?",
+        "options": {
+          "A": "var",
+          "B": "let",
+          "C": "int",
+          "D": "integer"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Qual a extensão de um arquivo Python?",
+        "options": {
+          "A": ".html",
+          "B": ".exe",
+          "C": ".py",
+          "D": ".c"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "O que significa HTML?",
+        "options": {
+          "A": "Hyperlinks and Text Markup Language",
+          "B": "HyperText Machine Language",
+          "C": "HyperText Markup Language",
+          "D": "Hyper Transfer Markup Language"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Qual símbolo usamos para comentar uma linha em Python?",
+        "options": {
+          "A": "//",
+          "B": "<!-- -->",
+          "C": "#",
+          "D": "/* */"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Como iniciamos um loop for em Python?",
+        "options": {
+          "A": "repeat",
+          "B": "foreach",
+          "C": "for",
+          "D": "loop"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Qual valor booleano representa falso em Python?",
+        "options": {
+          "A": "False",
+          "B": "false",
+          "C": "0",
+          "D": "null"
+        },
+        "correct_answer": "A"
+      },
+      {
+        "question": "Como encerramos uma função em C?",
+        "options": {
+          "A": "break",
+          "B": "stop",
+          "C": "return",
+          "D": "end"
+        },
+        "correct_answer": "C"
+      },
+      {
+        "question": "Em HTML, qual tag usamos para criar um link?",
+        "options": {
+          "A": "p",
+          "B": "div",
+          "C": "a",
+          "D": "img"
+        },
+        "correct_answer": "C"
+      }
+    ]
+  }
+  
