@@ -1,0 +1,54 @@
+{
+  "questions": [
+    {
+      "question": "O que é uma variável?",
+      "options": {
+        "A": "Um tipo de dado",
+        "B": "Um valor fixo",
+        "C": "Um espaço na memória para armazenar dados",
+        "D": "Um loop"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "question": "Qual é a função da instrução 'if'?",
+      "options": {
+        "A": "Repetir código",
+        "B": "Executar código condicionalmente",
+        "C": "Declarar variáveis",
+        "D": "Encerrar o programa"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "question": "Como representamos um comentário em Python?",
+      "options": {
+        "A": "// comentário",
+        "B": "/* comentário */",
+        "C": "# comentário",
+        "D": "<!-- comentário -->"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "question": "Qual é o tipo de dado de 10.5 em Python?",
+      "options": {
+        "A": "int",
+        "B": "float",
+        "C": "str",
+        "D": "bool"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "question": "O que faz a função print()?",
+      "options": {
+        "A": "Lê entrada",
+        "B": "Executa um loop",
+        "C": "Exibe informações",
+        "D": "Salva arquivos"
+      },
+      "correct_answer": "C"
+    }
+  ]
+}

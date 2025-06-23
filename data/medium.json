@@ -1,0 +1,54 @@
+{
+  "questions": [
+    {
+      "question": "O que é uma função em programação?",
+      "options": {
+        "A": "Um valor constante",
+        "B": "Um tipo de loop",
+        "C": "Um bloco reutilizável de código",
+        "D": "Um operador matemático"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "question": "Como definimos uma função em Python?",
+      "options": {
+        "A": "function nome()",
+        "B": "def nome():",
+        "C": "create nome()",
+        "D": "fun nome()"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "question": "O que é um loop 'for'?",
+      "options": {
+        "A": "Um tipo de dado",
+        "B": "Um erro de compilação",
+        "C": "Um tipo de condicional",
+        "D": "Um laço de repetição"
+      },
+      "correct_answer": "D"
+    },
+    {
+      "question": "Qual destas estruturas representa uma lista em Python?",
+      "options": {
+        "A": "(1,2,3)",
+        "B": "{1,2,3}",
+        "C": "[1,2,3]",
+        "D": "<1,2,3>"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "question": "O que faz a função range(5)?",
+      "options": {
+        "A": "Gera os números de 0 a 4",
+        "B": "Gera o número 5",
+        "C": "Gera infinitos números",
+        "D": "Retorna uma string"
+      },
+      "correct_answer": "A"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "questions": [
+    {
+      "question": "O que é recursão?",
+      "options": {
+        "A": "Uma função chamando a si mesma",
+        "B": "Um loop infinito",
+        "C": "Um erro de execução",
+        "D": "Uma variável global"
+      },
+      "correct_answer": "A"
+    },
+    {
+      "question": "Qual estrutura de dados funciona como FIFO?",
+      "options": {
+        "A": "Pilha",
+        "B": "Fila",
+        "C": "Lista",
+        "D": "Dicionário"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "question": "Qual o resultado de 2 ** 3 em Python?",
+      "options": {
+        "A": "5",
+        "B": "6",
+        "C": "8",
+        "D": "9"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "question": "Como tratamos exceções em Python?",
+      "options": {
+        "A": "try/catch",
+        "B": "try/except",
+        "C": "error/handle",
+        "D": "do/catch"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "question": "O que é uma classe em POO?",
+      "options": {
+        "A": "Uma função especial",
+        "B": "Uma estrutura de repetição",
+        "C": "Um tipo de dado",
+        "D": "Um molde para objetos"
+      },
+      "correct_answer": "D"
+    }
+  ]
+}
