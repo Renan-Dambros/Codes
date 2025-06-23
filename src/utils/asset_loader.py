@@ -27,5 +27,5 @@ class AssetLoader:
         if os.path.exists(snd_path):
             for file in os.listdir(snd_path):
                 name, ext = os.path.splitext(file)
-                if ext == ".mpeg":
+                if ext == ".mp3":
                     self.sounds[name] = os.path.join(snd_path, file)

@@ -4,32 +4,68 @@ class EndState:
     def __init__(self, game):
         self.game = game
         self.font = self.game.assets.fonts["default"]
-        self.button_rect = pygame.Rect(0, 0, 100, 50)  # Botão "Sair"
         self.running = True
 
-        # Centralizar botão horizontalmente e posicionar abaixo do texto
-        self.button_rect.centerx = self.game.WIDTH // 2
-        self.button_rect.top = 260  # Logo abaixo do texto que estará em y=200
+        # Parar a música de fundo ao chegar no end
+        pygame.mixer.music.stop()
 
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.game.running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.button_rect.collidepoint(event.pos):
+                mouse_x, mouse_y = event.pos
+                screen_w, screen_h = self.game.screen.get_size()
+                scale_w = screen_w / self.game.WIDTH
+                scale_h = screen_h / self.game.HEIGHT
+                scale = min(scale_w, scale_h)
+                offset_x = (screen_w - self.game.WIDTH * scale) / 2
+                offset_y = (screen_h - self.game.HEIGHT * scale) / 2
+
+                # Converter posição do mouse para coordenadas base do jogo
+                game_mouse_x = (mouse_x - offset_x) / scale
+                game_mouse_y = (mouse_y - offset_y) / scale
+
+                # Se clicou dentro do botão
+                if self.button_rect.collidepoint(game_mouse_x, game_mouse_y):
                     self.game.running = False
 
     def update(self):
         pass
 
     def render(self):
-        self.game.screen.fill((0, 0, 0))
+        screen_w, screen_h = self.game.screen.get_size()
+        scale_w = screen_w / self.game.WIDTH
+        scale_h = screen_h / self.game.HEIGHT
+        scale = min(scale_w, scale_h)
+
+        game_surface = pygame.Surface((self.game.WIDTH, self.game.HEIGHT))
+        game_surface.fill((0, 0, 0))
+
+        # Texto centralizado
         title_text = self.font.render("Parabéns! Você completou o jogo!", True, (255, 255, 255))
-        self.game.screen.blit(title_text, (self.game.WIDTH // 2 - title_text.get_width() // 2, 200))
+        text_x = (self.game.WIDTH - title_text.get_width()) // 2
+        text_y = self.game.HEIGHT // 3
+        game_surface.blit(title_text, (text_x, text_y))
 
-        pygame.draw.rect(self.game.screen, (150, 0, 0), self.button_rect)
+        # Botão centralizado abaixo do texto
+        button_width, button_height = 150, 50
+        button_x = (self.game.WIDTH - button_width) // 2
+        button_y = text_y + title_text.get_height() + 50
+        self.button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+
+        pygame.draw.rect(game_surface, (150, 0, 0), self.button_rect)
         button_text = self.font.render("Sair", True, (255, 255, 255))
-        self.game.screen.blit(button_text, (self.button_rect.centerx - button_text.get_width() // 2,
-                                            self.button_rect.centery - button_text.get_height() // 2))
+        text_x = self.button_rect.centerx - button_text.get_width() // 2
+        text_y = self.button_rect.centery - button_text.get_height() // 2
+        game_surface.blit(button_text, (text_x, text_y))
 
+        # Redimensionar para tela
+        scaled_surf = pygame.transform.smoothscale(game_surface, (int(self.game.WIDTH * scale), int(self.game.HEIGHT * scale)))
+
+        offset_x = (screen_w - scaled_surf.get_width()) // 2
+        offset_y = (screen_h - scaled_surf.get_height()) // 2
+
+        self.game.screen.fill((0, 0, 0))
+        self.game.screen.blit(scaled_surf, (offset_x, offset_y))
         pygame.display.flip()

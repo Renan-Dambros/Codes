@@ -29,7 +29,19 @@ class GameState:
 
         self.konami_progress = 0
         self.easter_egg_active = easter_egg_active
-        self.secret_message_timer = 0  # Timer para mensagem "Segredo Desbloqueado"
+        self.secret_message_timer = 0
+
+        # Carregar sons
+        self.hover_sound = pygame.mixer.Sound("assets/sounds/hover.mp3")
+        self.correct_sound = pygame.mixer.Sound("assets/sounds/correct.mp3")
+        self.wrong_sound = pygame.mixer.Sound("assets/sounds/wrong.mp3")
+
+        # Tocar música da fase (somente se ainda não estiver tocando)
+        if not pygame.mixer.music.get_busy():
+            pygame.mixer.music.load("assets/sounds/game.mp3")
+            pygame.mixer.music.play(-1)  # Loop infinito
+
+        self.last_hovered_option = None
 
     def load_level(self):
         TILE_SIZE = 30
@@ -44,13 +56,21 @@ class GameState:
             for y in range(0, BASE_HEIGHT, TILE_SIZE):
                 self.bg.blit(floor, (x, y))
 
-        self.player = Player(self.game.assets.images, [50, BASE_HEIGHT - 100])
+        # Jogador nasce no meio da 3ª fileira (entre as mesas)
+        # Considerando mesas começam em y=200 e espaçamento vertical = 70
+        # Mesa tem 40px de altura e largura 60px
+        # 3ª fileira começa em y=200 + 2*70 = 340, o jogador nasce próximo de y=340 + 45
+        player_x = 150 + (120 * 1.5)  # Meio horizontal da fileira 3 (com espaçamento horizontal 120)
+        player_y = 340 + 45  # ligeiramente abaixo da 3ª fileira
+
+        self.player = Player(self.game.assets.images, [player_x, player_y])
 
         self.npc = pygame.sprite.Sprite()
         self.npc.image = pygame.transform.scale(self.game.assets.images["prof"], (55, 65))
         self.npc.rect = self.npc.image.get_rect(topleft=(BASE_WIDTH // 2, 100))
-        self.npc_area = pygame.Rect(self.npc.rect.x - 20, self.npc.rect.y - 20,
-                                    self.npc.rect.width + 40, self.npc.rect.height + 40)
+        # Área de interação menor: jogador precisa chegar bem perto do professor
+        self.npc_area = pygame.Rect(self.npc.rect.x + 10, self.npc.rect.y + 20,
+                                    self.npc.rect.width - 20, self.npc.rect.height - 30)
 
         self.walls = pygame.sprite.Group()
         wall_img = pygame.transform.scale(self.game.assets.images["parede"], (TILE_SIZE, TILE_SIZE))
@@ -78,16 +98,25 @@ class GameState:
         table_img = pygame.transform.scale(self.game.assets.images["mesa"], (60, 40))
         board_img = pygame.transform.scale(self.game.assets.images["quadro"], (300, 60))
 
-        for i in range(3):
-            table = pygame.sprite.Sprite()
-            table.image = table_img
-            table.rect = table_img.get_rect(topleft=(150 + i * 150, 250))
-            self.objects.add(table)
+        # Criar 4 fileiras e 4 mesas por fileira com espaçamento horizontal aumentado (distância horizontal maior que 60)
+        start_x = 150
+        horizontal_spacing = 120  # mesa 60 + 60 de espaço entre mesas na horizontal
+        start_y = 200
+        vertical_spacing = 70  # espaçamento vertical entre fileiras (mantido)
 
-        board = pygame.sprite.Sprite()
-        board.image = board_img
-        board.rect = board_img.get_rect(topleft=(250, 30))
-        self.objects.add(board)
+        for row in range(4):
+            y = start_y + row * vertical_spacing
+            for col in range(4):
+                x = start_x + col * horizontal_spacing
+                table = pygame.sprite.Sprite()
+                table.image = table_img
+                table.rect = table_img.get_rect(topleft=(x, y))
+                self.objects.add(table)
+
+        self.board = pygame.sprite.Sprite()
+        self.board.image = board_img
+        self.board.rect = board_img.get_rect(topleft=(250, 30))
+        self.objects.add(self.board)
 
         self.door = None
         self.current_question = None
@@ -100,10 +129,11 @@ class GameState:
         door_img = pygame.transform.scale(self.game.assets.images["porta"], (60, 80))
         self.door = pygame.sprite.Sprite()
         self.door.image = door_img
-        self.door.rect = door_img.get_rect(topleft=(BASE_WIDTH - 100, BASE_HEIGHT - 120))
-        self.show_door_message_timer = 180  # 3 segundos a 60fps
-        # Apenas mostra mensagem "Segredo Desbloqueado" quando o código é ativado, não ao spawnar a porta
-        # Portanto, não setamos o secret_message_timer aqui
+        # Porta aparece sempre à esquerda do quadro (board) no topo
+        door_x = self.board.rect.left - 70  # 10px à esquerda do quadro (60 largura da porta + 10 de espaçamento)
+        door_y = self.board.rect.top + 10
+        self.door.rect = door_img.get_rect(topleft=(door_x, door_y))
+        self.show_door_message_timer = 180
 
     def handle_events(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -129,7 +159,7 @@ class GameState:
                     if self.konami_progress == len(self.KONAMI_CODE):
                         self.easter_egg_active = True
                         self.konami_progress = 0
-                        self.secret_message_timer = 300  # 5 segundos a 60fps
+                        self.secret_message_timer = 300
                 else:
                     self.konami_progress = 0
 
@@ -146,9 +176,10 @@ class GameState:
         if self.selected_option is not None:
             correct = self.selected_option == self.current_question["correct_answer"]
             self.feedback = "Correto!" if correct else "Errado!"
-            self.feedback_timer = 30  # diminuir tempo da mensagem (metade do original)
+            self.feedback_timer = 30
 
             if correct:
+                self.correct_sound.play()
                 if self.current_question in self.questions:
                     self.questions.remove(self.current_question)
                 self.current_question = None
@@ -157,6 +188,8 @@ class GameState:
 
                 if len(self.questions) == 0 and not self.door:
                     self.spawn_door()
+            else:
+                self.wrong_sound.play()
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -170,7 +203,6 @@ class GameState:
                 self.current_question = random.choice(self.questions)
                 self.showing_question = True
                 self.selected_option = None
-                # Se Easter Egg ativo, já marca a resposta correta
                 if self.easter_egg_active:
                     self.selected_option = self.current_question["correct_answer"]
 
@@ -178,7 +210,6 @@ class GameState:
             current_index = self.DIFFICULTY_ORDER.index(self.difficulty)
             if current_index + 1 < len(self.DIFFICULTY_ORDER):
                 next_difficulty = self.DIFFICULTY_ORDER[current_index + 1]
-                # Passa o estado do Easter Egg para próxima fase para manter ativo
                 self.game.state = GameState(self.game, next_difficulty, easter_egg_active=self.easter_egg_active)
             else:
                 self.game.state = EndState(self.game)
@@ -200,6 +231,13 @@ class GameState:
 
         if self.door:
             self.game_surface.blit(self.door.image, self.door.rect)
+            small_font = pygame.font.Font(None, 20)  # Tamanho 20 pixels, bem menor que o padrão
+            msg = "Vá para a porta para avançar"
+            text_surf = small_font.render(msg, True, (255, 255, 255))
+            text_x = self.board.rect.left + (self.board.rect.width // 2) - (text_surf.get_width() // 2)
+            text_y = self.board.rect.top + (self.board.rect.height // 2) - (text_surf.get_height() // 2)
+            self.game_surface.blit(text_surf, (text_x, text_y))
+
 
         self.game_surface.blit(self.player.image, self.player.rect)
 
@@ -211,12 +249,6 @@ class GameState:
             color = (0, 255, 0) if self.feedback == "Correto!" else (255, 0, 0)
             surface = font.render(self.feedback, True, color)
             self.game_surface.blit(surface, (BASE_WIDTH // 2 - surface.get_width() // 2, 80))
-
-        if self.show_door_message_timer > 0:
-            font = self.game.assets.fonts["default"]
-            msg = "Vá até a porta para avançar"
-            surface = font.render(msg, True, (255, 255, 255))
-            self.game_surface.blit(surface, (BASE_WIDTH // 2 - surface.get_width() // 2, BASE_HEIGHT - 100))
 
         if self.secret_message_timer > 0:
             font = self.game.assets.fonts["default"]
@@ -260,14 +292,12 @@ class GameState:
             y += text.get_height() + 5
 
         mouse_pos = pygame.mouse.get_pos()
-
         screen_w, screen_h = self.game.screen.get_size()
         scale_w = screen_w / BASE_WIDTH
         scale_h = screen_h / BASE_HEIGHT
         scale = min(scale_w, scale_h)
         offset_x = (screen_w - BASE_WIDTH * scale) / 2
         offset_y = (screen_h - BASE_HEIGHT * scale) / 2
-
         game_mouse_x = (mouse_pos[0] - offset_x) / scale
         game_mouse_y = (mouse_pos[1] - offset_y) / scale
         game_mouse_pos = (game_mouse_x, game_mouse_y)
@@ -279,10 +309,17 @@ class GameState:
             rect = pygame.Rect(150, y, 500, height)
             self.option_rects[opt] = rect
 
+            hovering = rect.collidepoint(game_mouse_pos)
+            if hovering and self.last_hovered_option != opt:
+                self.hover_sound.play()
+                self.last_hovered_option = opt
+            if not hovering and self.last_hovered_option == opt:
+                self.last_hovered_option = None
+
             if self.easter_egg_active and opt == question["correct_answer"]:
                 color = (0, 180, 0)
             else:
-                color = (150, 150, 150) if rect.collidepoint(game_mouse_pos) else (100, 100, 100)
+                color = (150, 150, 150) if hovering else (100, 100, 100)
 
             pygame.draw.rect(self.game_surface, color, rect)
 
