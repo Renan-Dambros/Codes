@@ -1,10 +1,10 @@
-# Quiz Classroom Adventure 🎮
+# CodeQuest: A Jornada do Programador 🎮
 
 Um jogo educativo feito em Python + Pygame, onde o jogador percorre uma sala de aula, interage com um professor NPC, responde a quizzes e avança por diferentes fases de dificuldade.
 
 ## 📌 Como jogar
 
-- Mova o personagem com as teclas **WASD** ou **Setas**.
+- Mova o personagem com as **Setas**.
 - Interaja com o **Professor** chegando perto dele (a área de interação é pequena para maior precisão).
 - Após acertar todas as perguntas, uma **porta** aparece no topo da sala, ao lado do quadro. Vá até ela para avançar para a próxima fase.
 - Após completar as três fases (**easy**, **medium**, **hard**), o jogo termina com a tela de fim.
