@@ -25,23 +25,44 @@ class GameState:
         self.questions_answered = 0
         self.game_surface = pygame.Surface((BASE_WIDTH, BASE_HEIGHT))
         self.load_level()
-        self.show_door_message_timer = 0
 
         self.konami_progress = 0
         self.easter_egg_active = easter_egg_active
         self.secret_message_timer = 0
 
-        # Carregar sons
         self.hover_sound = pygame.mixer.Sound("assets/sounds/hover.mp3")
         self.correct_sound = pygame.mixer.Sound("assets/sounds/correct.mp3")
         self.wrong_sound = pygame.mixer.Sound("assets/sounds/wrong.mp3")
 
-        # Tocar música da fase (somente se ainda não estiver tocando)
         if not pygame.mixer.music.get_busy():
             pygame.mixer.music.load("assets/sounds/game.mp3")
-            pygame.mixer.music.play(-1)  # Loop infinito
+            pygame.mixer.music.play(-1)
 
         self.last_hovered_option = None
+
+        # --- Controle de diálogo ---
+        self.dialogs = self.load_dialogs()
+        self.in_dialog = False
+        self.dialog_phase = None  # pode ser 'before_quiz', 'after_quiz' ou None
+        self.dialog_index = 0
+        self.dialog_char_index = 0
+        self.dialog_speed = 2
+        self.dialog_timer = 0
+        self.dialog_queue = []
+
+        # Estado do quiz
+        self.showing_question = False
+        self.current_question = None
+        self.selected_option = None
+        self.feedback = ""
+        self.feedback_timer = 0
+
+        self.door = None
+        self.quiz_completed = False  # flag para saber se quiz terminou
+
+    def load_dialogs(self):
+        with open("data/dialogs.json", encoding="utf-8") as f:
+            return json.load(f)
 
     def load_level(self):
         TILE_SIZE = 30
@@ -56,19 +77,14 @@ class GameState:
             for y in range(0, BASE_HEIGHT, TILE_SIZE):
                 self.bg.blit(floor, (x, y))
 
-        # Jogador nasce no meio da 3ª fileira (entre as mesas)
-        # Considerando mesas começam em y=200 e espaçamento vertical = 70
-        # Mesa tem 40px de altura e largura 60px
-        # 3ª fileira começa em y=200 + 2*70 = 340, o jogador nasce próximo de y=340 + 45
-        player_x = 150 + (120 * 1.5)  # Meio horizontal da fileira 3 (com espaçamento horizontal 120)
-        player_y = 340 + 45  # ligeiramente abaixo da 3ª fileira
+        player_x = 150 + (120 * 1.5)
+        player_y = 340 + 45
 
         self.player = Player(self.game.assets.images, [player_x, player_y])
 
         self.npc = pygame.sprite.Sprite()
         self.npc.image = pygame.transform.scale(self.game.assets.images["prof"], (55, 65))
         self.npc.rect = self.npc.image.get_rect(topleft=(BASE_WIDTH // 2, 100))
-        # Área de interação menor: jogador precisa chegar bem perto do professor
         self.npc_area = pygame.Rect(self.npc.rect.x + 10, self.npc.rect.y + 20,
                                     self.npc.rect.width - 20, self.npc.rect.height - 30)
 
@@ -98,11 +114,10 @@ class GameState:
         table_img = pygame.transform.scale(self.game.assets.images["mesa"], (60, 40))
         board_img = pygame.transform.scale(self.game.assets.images["quadro"], (300, 60))
 
-        # Criar 4 fileiras e 4 mesas por fileira com espaçamento horizontal aumentado (distância horizontal maior que 60)
         start_x = 150
-        horizontal_spacing = 120  # mesa 60 + 60 de espaço entre mesas na horizontal
+        horizontal_spacing = 120
         start_y = 200
-        vertical_spacing = 70  # espaçamento vertical entre fileiras (mantido)
+        vertical_spacing = 70
 
         for row in range(4):
             y = start_y + row * vertical_spacing
@@ -118,22 +133,13 @@ class GameState:
         self.board.rect = board_img.get_rect(topleft=(250, 30))
         self.objects.add(self.board)
 
-        self.door = None
-        self.current_question = None
-        self.showing_question = False
-        self.selected_option = None
-        self.feedback = ""
-        self.feedback_timer = 0
-
     def spawn_door(self):
         door_img = pygame.transform.scale(self.game.assets.images["porta"], (60, 80))
         self.door = pygame.sprite.Sprite()
         self.door.image = door_img
-        # Porta aparece sempre à esquerda do quadro (board) no topo
-        door_x = self.board.rect.left - 70  # 10px à esquerda do quadro (60 largura da porta + 10 de espaçamento)
+        door_x = self.board.rect.left - 70
         door_y = self.board.rect.top + 10
         self.door.rect = door_img.get_rect(topleft=(door_x, door_y))
-        self.show_door_message_timer = 180
 
     def handle_events(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -154,6 +160,7 @@ class GameState:
                 self.game.running = False
 
             elif event.type == pygame.KEYDOWN:
+                # Konami code
                 if event.key == self.KONAMI_CODE[self.konami_progress]:
                     self.konami_progress += 1
                     if self.konami_progress == len(self.KONAMI_CODE):
@@ -166,11 +173,61 @@ class GameState:
                 if event.key == pygame.K_ESCAPE:
                     self.game.state = PauseState(self.game, self)
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and self.showing_question:
-                for opt, rect in self.option_rects.items():
-                    if rect.collidepoint(game_mouse_pos):
-                        self.selected_option = opt
-                        self.check_answer()
+                # Avança diálogo só se estiver no diálogo e apertar espaço
+                if self.in_dialog and event.key == pygame.K_SPACE:
+                    self.advance_dialog()
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.showing_question and not self.in_dialog:
+                    for opt, rect in self.option_rects.items():
+                        if rect.collidepoint(game_mouse_pos):
+                            self.selected_option = opt
+                            self.check_answer()
+
+    def advance_dialog(self):
+        if self.dialog_char_index < len(self.dialog_queue[self.dialog_index]):
+            # Completa o texto imediatamente ao apertar espaço
+            self.dialog_char_index = len(self.dialog_queue[self.dialog_index])
+        else:
+            self.dialog_index += 1
+            if self.dialog_index >= len(self.dialog_queue):
+                # Diálogo terminou
+                if self.dialog_phase == "before_quiz":
+                    # Sai do diálogo e inicia o quiz
+                    self.in_dialog = False
+                    self.dialog_phase = None
+                    self.dialog_queue = []
+                    self.dialog_index = 0
+                    self.dialog_char_index = 0
+                    self.start_next_question()
+                elif self.dialog_phase == "after_quiz":
+                    self.in_dialog = False
+                    self.dialog_phase = None
+                    self.dialog_queue = []
+                    self.dialog_index = 0
+                    self.dialog_char_index = 0
+                    # Se quiz finalizado, spawn porta
+                    if self.quiz_completed and not self.door:
+                        self.spawn_door()
+            else:
+                self.dialog_char_index = 0
+
+    def start_next_question(self):
+        if len(self.questions) > 0:
+            self.current_question = random.choice(self.questions)
+            self.showing_question = True
+            self.selected_option = None
+        else:
+            # Quiz finalizado
+            self.current_question = None
+            self.showing_question = False
+            self.quiz_completed = True
+            # Começar diálogo after_quiz
+            self.in_dialog = True
+            self.dialog_phase = "after_quiz"
+            self.dialog_queue = self.dialogs[self.difficulty][self.dialog_phase]
+            self.dialog_index = 0
+            self.dialog_char_index = 0
 
     def check_answer(self):
         if self.selected_option is not None:
@@ -182,30 +239,41 @@ class GameState:
                 self.correct_sound.play()
                 if self.current_question in self.questions:
                     self.questions.remove(self.current_question)
-                self.current_question = None
                 self.showing_question = False
                 self.selected_option = None
-
-                if len(self.questions) == 0 and not self.door:
-                    self.spawn_door()
+                # Inicia diálogo after quiz só se quiz finalizado
+                if len(self.questions) == 0:
+                    self.quiz_completed = True
+                    self.in_dialog = True
+                    self.dialog_phase = "after_quiz"
+                    self.dialog_queue = self.dialogs[self.difficulty][self.dialog_phase]
+                    self.dialog_index = 0
+                    self.dialog_char_index = 0
+                else:
+                    # Se ainda tem perguntas, volta para perguntar só sem diálogo
+                    self.start_next_question()
             else:
                 self.wrong_sound.play()
 
     def update(self):
         keys = pygame.key.get_pressed()
 
-        if not self.showing_question:
+        # Movimento só se não estiver em diálogo nem quiz
+        if not self.in_dialog and not self.showing_question:
             all_walls = pygame.sprite.Group(self.walls, self.objects)
             self.player.update(keys, all_walls)
 
-        if not self.showing_question and self.npc_area.colliderect(self.player.rect):
-            if not self.current_question and self.questions:
-                self.current_question = random.choice(self.questions)
-                self.showing_question = True
-                self.selected_option = None
-                if self.easter_egg_active:
-                    self.selected_option = self.current_question["correct_answer"]
+        # Se estiver perto do NPC, e não estiver em diálogo nem quiz e quiz não começou, inicia diálogo before_quiz
+        if not self.in_dialog and not self.showing_question and not self.quiz_completed:
+            if self.npc_area.colliderect(self.player.rect):
+                # Começa diálogo antes do quiz
+                self.in_dialog = True
+                self.dialog_phase = "before_quiz"
+                self.dialog_queue = self.dialogs[self.difficulty][self.dialog_phase]
+                self.dialog_index = 0
+                self.dialog_char_index = 0
 
+        # Colisão com porta para avançar fase
         if self.door and self.player.rect.colliderect(self.door.rect):
             current_index = self.DIFFICULTY_ORDER.index(self.difficulty)
             if current_index + 1 < len(self.DIFFICULTY_ORDER):
@@ -216,9 +284,6 @@ class GameState:
 
         if self.feedback_timer > 0:
             self.feedback_timer -= 1
-
-        if self.show_door_message_timer > 0:
-            self.show_door_message_timer -= 1
 
         if self.secret_message_timer > 0:
             self.secret_message_timer -= 1
@@ -231,17 +296,18 @@ class GameState:
 
         if self.door:
             self.game_surface.blit(self.door.image, self.door.rect)
-            small_font = pygame.font.Font(None, 20)  # Tamanho 20 pixels, bem menor que o padrão
+            small_font = pygame.font.Font(None, 20)
             msg = "Vá para a porta para avançar"
             text_surf = small_font.render(msg, True, (255, 255, 255))
             text_x = self.board.rect.left + (self.board.rect.width // 2) - (text_surf.get_width() // 2)
             text_y = self.board.rect.top + (self.board.rect.height // 2) - (text_surf.get_height() // 2)
             self.game_surface.blit(text_surf, (text_x, text_y))
 
-
         self.game_surface.blit(self.player.image, self.player.rect)
 
-        if self.showing_question and self.current_question:
+        if self.in_dialog:
+            self.draw_dialog()
+        elif self.showing_question and self.current_question:
             self.draw_question()
 
         if self.feedback_timer > 0:
@@ -331,18 +397,58 @@ class GameState:
 
             y += height + 15
 
+    def draw_dialog(self):
+        font = self.game.assets.fonts["default"]
+        dialog_box_h = 150
+        box_rect = pygame.Rect(0, BASE_HEIGHT - dialog_box_h, BASE_WIDTH, dialog_box_h)
+
+        s = pygame.Surface((BASE_WIDTH, dialog_box_h), pygame.SRCALPHA)
+        s.fill((0, 0, 0, 200))
+        self.game_surface.blit(s, (0, BASE_HEIGHT - dialog_box_h))
+
+        title_height = 40
+        pygame.draw.line(self.game_surface, (255, 255, 255), (0, BASE_HEIGHT - dialog_box_h + title_height), (BASE_WIDTH, BASE_HEIGHT - dialog_box_h + title_height), 2)
+
+        prof_img = self.game.assets.images["prof_torso"]
+        prof_img = pygame.transform.scale(prof_img, (80, 120))
+        prof_img_rect = prof_img.get_rect(topleft=(20, BASE_HEIGHT - dialog_box_h + 10))
+        self.game_surface.blit(prof_img, prof_img_rect)
+
+        title_text = font.render("Professor", True, (255, 255, 255))
+        title_pos = (prof_img_rect.right + 20, BASE_HEIGHT - dialog_box_h + 10)
+        self.game_surface.blit(title_text, title_pos)
+
+        full_text = self.dialog_queue[self.dialog_index]
+        chars_to_show = self.dialog_char_index // self.dialog_speed
+        if chars_to_show > len(full_text):
+            chars_to_show = len(full_text)
+        displayed_text = full_text[:chars_to_show]
+
+        wrapped_lines = self.wrap_text(displayed_text, font, BASE_WIDTH - prof_img_rect.width - 80)
+        y = BASE_HEIGHT - dialog_box_h + title_height + 10
+        x = prof_img_rect.right + 20
+
+        for line in wrapped_lines:
+            text_surf = font.render(line, True, (255, 255, 255))
+            self.game_surface.blit(text_surf, (x, y))
+            y += font.get_height() + 5
+
+        self.dialog_timer += 1
+        if self.dialog_timer >= self.dialog_speed:
+            self.dialog_char_index += 1
+            self.dialog_timer = 0
+
     def wrap_text(self, text, font, max_width):
         words = text.split(' ')
         lines = []
         current_line = ""
         for word in words:
-            test_line = current_line + ("" if current_line == "" else " ") + word
+            test_line = current_line + word + " "
             if font.size(test_line)[0] <= max_width:
                 current_line = test_line
             else:
-                if current_line != "":
-                    lines.append(current_line)
-                current_line = word
-        if current_line != "":
-            lines.append(current_line)
+                lines.append(current_line.strip())
+                current_line = word + " "
+        if current_line:
+            lines.append(current_line.strip())
         return lines

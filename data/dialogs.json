@@ -1,0 +1,32 @@
+{
+  "easy": {
+    "before_quiz": [
+      "Olá Aluno, seja bem-vindo. Hoje você irá ter um teste básico sobre Python.",
+      "Responda corretamente todas as perguntas para avançar para a próxima fase."
+    ],
+    "after_quiz": [
+      "Muito bem! Você foi aprovado na primeira parte do Teste.",
+      "Vá até a porta e nos vemos no próximo dia."
+    ]
+  },
+  "medium": {
+    "before_quiz": [
+      "Olá Aluno, seja bem-vindo a segunda parte do teste especial sobre Python.",
+      "O Processo é o mesmo, Responda corretamente todas as perguntas para avançar para a próxima fase"
+    ],
+    "after_quiz": [
+      "Ótimo trabalho! Você provou mais uma vez que está apto.",
+      "Mas ainda não acabou. vá até a porta e nos veremos no próximo dia para a fase final do Teste."
+    ]
+  },
+  "hard": {
+    "before_quiz": [
+      "Seja bem-vindo mais uma vez Aluno, hoje é a fase final do Teste.",
+      "Chegou a hora de você provar o seu potencial, boa sorte!"
+    ],
+    "after_quiz": [
+      "Parabéns! Você se dedicou e foi aprovado no teste especial de Python",
+      "Você está preparado para tudo! vá até a porta para pegar o seu diploma"
+    ]
+  }
+}

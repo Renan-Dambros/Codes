@@ -5,8 +5,10 @@ class EndState:
         self.game = game
         self.font = self.game.assets.fonts["default"]
         self.running = True
-
-        # Parar a música de fundo ao chegar no end
+        self.diploma_image = pygame.transform.scale(
+            self.game.assets.images["diploma"], 
+            (self.game.WIDTH, self.game.HEIGHT)
+        )
         pygame.mixer.music.stop()
 
     def handle_events(self):
@@ -16,17 +18,13 @@ class EndState:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
                 screen_w, screen_h = self.game.screen.get_size()
-                scale_w = screen_w / self.game.WIDTH
-                scale_h = screen_h / self.game.HEIGHT
-                scale = min(scale_w, scale_h)
+                scale = min(screen_w / self.game.WIDTH, screen_h / self.game.HEIGHT)
                 offset_x = (screen_w - self.game.WIDTH * scale) / 2
                 offset_y = (screen_h - self.game.HEIGHT * scale) / 2
 
-                # Converter posição do mouse para coordenadas base do jogo
                 game_mouse_x = (mouse_x - offset_x) / scale
                 game_mouse_y = (mouse_y - offset_y) / scale
 
-                # Se clicou dentro do botão
                 if self.button_rect.collidepoint(game_mouse_x, game_mouse_y):
                     self.game.running = False
 
@@ -35,23 +33,19 @@ class EndState:
 
     def render(self):
         screen_w, screen_h = self.game.screen.get_size()
-        scale_w = screen_w / self.game.WIDTH
-        scale_h = screen_h / self.game.HEIGHT
-        scale = min(scale_w, scale_h)
+        scale = min(screen_w / self.game.WIDTH, screen_h / self.game.HEIGHT)
 
         game_surface = pygame.Surface((self.game.WIDTH, self.game.HEIGHT))
-        game_surface.fill((0, 0, 0))
+        game_surface.blit(self.diploma_image, (0, 0))
 
-        # Texto centralizado
-        title_text = self.font.render("Parabéns! Você completou o jogo!", True, (255, 255, 255))
-        text_x = (self.game.WIDTH - title_text.get_width()) // 2
+        congrats_text = self.font.render("Parabéns! Você foi aprovado!", True, (0, 0, 0))
+        text_x = (self.game.WIDTH - congrats_text.get_width()) // 2
         text_y = self.game.HEIGHT // 3
-        game_surface.blit(title_text, (text_x, text_y))
+        game_surface.blit(congrats_text, (text_x, text_y))
 
-        # Botão centralizado abaixo do texto
         button_width, button_height = 150, 50
         button_x = (self.game.WIDTH - button_width) // 2
-        button_y = text_y + title_text.get_height() + 50
+        button_y = text_y + congrats_text.get_height() + 50
         self.button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
 
         pygame.draw.rect(game_surface, (150, 0, 0), self.button_rect)
@@ -60,8 +54,10 @@ class EndState:
         text_y = self.button_rect.centery - button_text.get_height() // 2
         game_surface.blit(button_text, (text_x, text_y))
 
-        # Redimensionar para tela
-        scaled_surf = pygame.transform.smoothscale(game_surface, (int(self.game.WIDTH * scale), int(self.game.HEIGHT * scale)))
+        scaled_surf = pygame.transform.smoothscale(
+            game_surface,
+            (int(self.game.WIDTH * scale), int(self.game.HEIGHT * scale))
+        )
 
         offset_x = (screen_w - scaled_surf.get_width()) // 2
         offset_y = (screen_h - scaled_surf.get_height()) // 2

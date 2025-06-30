@@ -1,5 +1,3 @@
-# src/characters/player.py
-
 import pygame
 
 class Player(pygame.sprite.Sprite):
@@ -22,19 +20,19 @@ class Player(pygame.sprite.Sprite):
         old_pos = self.rect.topleft
         moved = False
 
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.rect.x -= self.speed
             self.direction = "left"
             moved = True
-        elif keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rect.x += self.speed
             self.direction = "right"
             moved = True
-        elif keys[pygame.K_UP]:
+        elif keys[pygame.K_UP] or keys[pygame.K_w]:
             self.rect.y -= self.speed
             self.direction = "up"
             moved = True
-        elif keys[pygame.K_DOWN]:
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.rect.y += self.speed
             self.direction = "down"
             moved = True
